@@ -139,6 +139,16 @@ docs/DAILY/<date>.md   generated summaries
 repository holds the pipeline, not the person — this history was started clean
 so no personal data has ever been committed to it.
 
+## Elsewhere
+
+Part of [my portfolio](https://portfolio-website-eight-kappa-iwtiz3w2ef.vercel.app),
+which introduces each project by the thing it refuses to do. This one refuses to
+submit the application.
+
+Related: [job-rag](https://github.com/JamesKevinJones/job-rag) takes the other end
+of the same problem — conversational search over listings rather than scoring and
+queueing them.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
