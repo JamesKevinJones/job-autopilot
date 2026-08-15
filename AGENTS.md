@@ -1,0 +1,82 @@
+# Job Autopilot
+
+Discovers junior/intern software roles, scores them against Kevin's profile,
+and queues the good ones for approval. Writes a summary at 21:00 IST daily.
+
+## What this does and does not do
+
+It **does**: discover, deduplicate, gate, score, queue, track, and summarise.
+
+It **does not** auto-submit applications. Submitting forms on job boards means
+entering personal data and clicking irreversible controls on Kevin's behalf,
+and mass auto-submission gets accounts restricted and trips ATS dedup filters.
+The queue is reviewed, then submission is browser-assisted with Kevin
+confirming each one.
+
+## Stack
+
+Python 3.11, standard library plus `requests` and `PyYAML`. SQLite for storage.
+No framework — the whole thing is six modules.
+
+## Layout
+
+```
+profile.example.yaml      committed template
+profile.yaml              single source of truth for every form field (gitignored)
+autopilot/
+  config.py               loads profile.yaml, defines paths
+  models.py               Job, Verdict, ScoredJob
+  scorer.py               hard gates + weighted score
+  store.py                SQLite schema and queries
+  pipeline.py             fetch -> gate -> score -> store
+  digest.py               daily markdown summary
+  cli.py                  command line entry point
+  sources/
+    base.py               HTTP helpers, Source protocol
+    remoteok.py           RemoteOK tag-filtered feeds
+    remotive.py           Remotive software-dev category
+scripts/daily.ps1         scheduled task entry point
+data/autopilot.db         SQLite (gitignored)
+docs/DAILY/<date>.md      generated summaries
+```
+
+## Commands
+
+```bash
+python -m autopilot run                    # discover and score
+python -m autopilot queue                  # what is awaiting approval
+python -m autopilot digest                 # write today's summary
+python -m autopilot daily                  # run + digest (scheduler uses this)
+python -m autopilot approve <fingerprint>  # mark as applied
+python -m autopilot skip <fingerprint>     # dismiss
+```
+
+## Rules
+
+- **profile.yaml is the only place personal data lives, and it is gitignored.**
+  Never hardcode a name, email, phone number or salary figure into a module,
+  and never commit a real value into `profile.example.yaml` — the repo is
+  public and its history was started clean on purpose. The resume assets are
+  gitignored for the same reason: their header carries a phone number.
+- **Sources must have a public API.** LinkedIn, Naukri, Internshala and
+  Wellfound forbid automated scraping and will restrict the account. They are
+  handled browser-assisted, with Kevin already signed in.
+- **Rejections are stored, not discarded.** The `gated` status keeps every
+  filtered job so thresholds can be recalibrated against real data. This is
+  how the `not-a-tech-role` gate was found to be necessary.
+- **A dead source must not kill the run.** `pipeline.run` catches per-source
+  exceptions and records them in the `runs` table.
+- **Deduplicate on company+title, not URL.** The same role is reposted under
+  fresh URLs every few weeks.
+
+## Scoring
+
+Two stages. Hard gates disqualify outright: `not-a-tech-role`, `senior-title`,
+`asks-for-money`, `requires-Ny-experience` (N > 2), `location-mismatch`,
+`blacklisted-company`. Survivors get 0-100 from title match (35), stack
+overlap (35), entry-level signals (15), location (15). Queue threshold is 55,
+set in `pipeline.QUEUE_THRESHOLD`.
+
+Skill matching is word-boundary anchored and skips `AMBIGUOUS_SKILLS`
+(`move`, `rag`, `java`, `css`, ...). Substring matching previously scored a
+Handyman listing 29/100 because "rag" appears inside "storage".

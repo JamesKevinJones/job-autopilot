@@ -1,0 +1,33 @@
+# Local database and logs
+data/
+
+# Generated resume PDF
+assets/resume/*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Personal data. profile.yaml holds a real name, phone, postal address and
+# salary expectations — it never gets committed. profile.example.yaml is the
+# committed template; copy it across and fill it in locally.
+profile.yaml
+
+# Resumes carry a phone number and address in their header.
+assets/resume/
+
+# Secrets — any OAuth token for the Gmail digest goes here.
+.env
+*.token.json
+credentials.json
+
+# Project virtualenv
+.venv/
+

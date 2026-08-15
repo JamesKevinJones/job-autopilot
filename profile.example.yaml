@@ -1,0 +1,119 @@
+# Copy to profile.yaml and fill in. profile.yaml is gitignored and never committed.
+#
+# This is the single source of truth for the whole pipeline: the scorer reads
+# targets and skills_tags from here, the digest reads delivery, and nothing
+# downstream hardcodes a personal value. If you find yourself typing a name or
+# a salary figure into a module, it belongs in this file instead.
+
+identity:
+  full_name: "Ada Lovelace"
+  first_name: "Ada"
+  middle_name: ""
+  last_name: "Lovelace"
+  # Some forms accept only First/Last, others a single "Full name" field that
+  # has to match your official documents. Keep both spellings here.
+  preferred_display_name: "Ada Lovelace"
+  pronouns_on_forms: "prefer not to say"
+
+contact:
+  email: "you@example.com"
+  email_academic: "you@university.edu"   # only where a .edu/college ID is required
+  phone: "+00 0000000000"
+  phone_country_code: "+00"
+  phone_national: "0000000000"
+  address_line1: "1 Example Street"
+  address_line2: ""
+  city: "Your City"
+  state: "Your State"
+  postal_code: "000000"
+  country: "Your Country"
+
+links:
+  linkedin: "https://www.linkedin.com/in/your-handle/"
+  github: "https://github.com/your-handle"
+  portfolio: "https://your-portfolio.example.com/"
+
+education:
+  institution: "Your University"
+  degree: "B.Tech"
+  major: "Computer Science and Engineering"
+  graduation_month: "May"
+  graduation_year: 2027
+  cgpa: 0.0
+  cgpa_scale: 10
+  percentage_equivalent: 0.0   # CGPA*9.5 convention; state as "approx." if asked
+  class_xii_board: "CBSE"
+  class_xii_year: 2023
+  class_xii_percentage: 0
+  class_x_board: "CBSE"
+  class_x_year: 2021
+  class_x_percentage: 0
+
+eligibility:
+  citizenship: "Your Country"
+  work_authorization_india: "Authorized to work without sponsorship"
+  requires_sponsorship: false
+  open_to_international_contractor: true   # invoice-based, no visa
+  earliest_start_date: "2026-01-01"
+  notice_period: "Immediate"
+  currently_employed: false
+  willing_to_relocate: true
+  relocation_targets: ["City A", "City B"]
+  remote_ok: true
+  hours_per_week_term_time: 20
+  hours_per_week_holidays: 40
+
+compensation:
+  # Quote the midpoint and add "negotiable based on role and responsibilities".
+  # These are read only by you when filling a form; the scorer ignores them.
+  currency: "INR"
+  internship_stipend_per_month: { min: 0, target: 0, max: 0 }
+  service_company_annual_lpa: { min: 0.0, target: 0.0, max: 0.0 }
+  product_startup_annual_lpa: { min: 0.0, target: 0.0, max: 0.0 }
+  web3_annual_lpa: { min: 0.0, target: 0.0, max: 0.0 }
+  freelance_hourly_inr: { min: 0, target: 0, max: 0 }
+  freelance_hourly_usd: { min: 0, target: 0, max: 0 }
+  negotiable: true
+
+# The scorer reads everything below. These are the values worth tuning.
+targets:
+  # Title match is 35 of the 100 points. List the exact titles you want.
+  role_titles:
+    - "Junior Software Engineer"
+    - "Software Development Engineer I (SDE I)"
+    - "Software Development Engineer Intern"
+    - "Junior Full Stack Developer"
+    - "Junior Backend Engineer"
+    - "Graduate Engineer Trainee"
+  employment_types: ["internship", "part-time", "freelance", "full-time-2027"]
+  # Home city first, relocation targets after. Remote of any origin still
+  # qualifies; a posting matching none of these is gated as location-mismatch.
+  locations: ["Your City", "Your State", "Remote-India", "Remote-Global"]
+  experience_level: "fresher"   # no prior professional experience required
+  blacklist_companies: []
+  daily_application_cap: 10
+
+# Stack overlap is another 35 points. Matching is word-boundary anchored, so
+# short ambiguous tags are skipped — see AMBIGUOUS_SKILLS in scorer.py.
+skills_tags:
+  languages: ["Python", "TypeScript", "JavaScript", "SQL"]
+  backend: ["FastAPI", "Node.js", "REST APIs"]
+  frontend: ["Next.js", "React", "Tailwind CSS"]
+  data: ["PostgreSQL", "SQLite", "Redis"]
+  ai_ml: ["RAG", "embeddings", "reranking"]
+  cloud_devops: ["Docker", "GitHub Actions", "CI/CD"]
+  testing: ["pytest"]
+  auth: ["OAuth 2.0"]
+
+documents:
+  base_resume_html: "assets/resume/Your_Resume_ATS.html"
+  base_resume_txt: "assets/resume/Your_Resume_ATS.txt"
+  base_resume_pdf: "assets/resume/Your_Resume_ATS.pdf"
+  cover_letter_tone: "direct, project-led"
+
+delivery:
+  daily_summary_time: "21:00"
+  timezone: "Asia/Kolkata"
+  channels: ["file", "gmail"]        # "file" always writes docs/DAILY/<date>.md
+  gmail_to: "you@example.com"
+  gmail_auth: "pending-oauth"        # falls back to file-only until OAuth is done
