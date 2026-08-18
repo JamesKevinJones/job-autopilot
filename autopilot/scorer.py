@@ -33,6 +33,16 @@ JUNIOR_MARKERS_RE = re.compile(
     re.IGNORECASE,
 )
 
+# An explicit fresher declaration anywhere in the post counts as an
+# entry-level signal, not just the title. Channel posts are terse: "Position:
+# Software Engineer / Experience: Freshers" carries the signal on its own
+# line, and title-only matching scored it as if seniority were unstated.
+FRESHER_DECLARATION_RE = re.compile(
+    r"(?:experience|exp)\s*[:\-–]?\s*"
+    r"(?:freshers?|0\s*(?:-|to)?\s*1?\s*(?:years?|yrs?)?|nil|none|no\s+prior)",
+    re.IGNORECASE,
+)
+
 # Explicitly-levelled senior variants that the seniority gate should catch.
 LEVELLED_SENIOR_RE = re.compile(
     r"\b(?:sde|engineer|developer|swe)\s*[-]?\s*(?:ii|iii|iv|v|2|3|4|5)\b",
@@ -50,6 +60,14 @@ FEE_MARKERS = (
 # years ago", producing nonsense gates such as requires-40y-experience.
 YEARS_RE = re.compile(
     r"(\d{1,2})\s*\+?\s*(?:-\s*\d{1,2}\s*)?\s*(?:\+\s*)?years?[^.]{0,40}?experience",
+    re.IGNORECASE,
+)
+
+# The reverse phrasing, which job posts shared on WhatsApp and Telegram use
+# constantly: "Experience: 5+ Years", "Exp - 3 to 6 yrs". Without this the
+# fresher gate missed them entirely and a 5-year role scored as a match.
+YEARS_REVERSED_RE = re.compile(
+    r"exp(?:erience)?\s*[:\-–]?\s*(\d{1,2})\s*\+?\s*(?:(?:-|to)\s*\d{1,2}\s*)?\s*(?:years?|yrs?)",
     re.IGNORECASE,
 )
 
@@ -83,8 +101,9 @@ AMBIGUOUS_SKILLS = {"move", "rag", "java", "css", "html", "sql", "c++", "git", "
 
 
 def _required_years(text: str) -> int | None:
-    """Largest 'N years ... experience' figure mentioned, if any."""
+    """Largest years-of-experience figure mentioned, in either phrasing."""
     matches = [int(m) for m in YEARS_RE.findall(text)]
+    matches += [int(m) for m in YEARS_REVERSED_RE.findall(text)]
     return max(matches) if matches else None
 
 
@@ -207,6 +226,9 @@ def score(job: Job, profile: dict[str, Any]) -> Verdict:
     if JUNIOR_MARKERS_RE.search(title):
         total += 15
         reasons_for.append("explicitly entry level")
+    elif FRESHER_DECLARATION_RE.search(text):
+        total += 15
+        reasons_for.append("post states freshers welcome")
     else:
         reasons_against.append("seniority not stated as entry level")
 

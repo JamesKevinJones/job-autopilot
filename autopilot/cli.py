@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
-from . import digest, pipeline
+from . import digest, ingest as ingest_mod, pipeline
 from .store import APPLIED, SKIPPED, connect, queue, set_status
 
 
@@ -54,6 +55,32 @@ def cmd_status(args: argparse.Namespace, status: str) -> int:
     return 0
 
 
+def cmd_ingest(args: argparse.Namespace) -> int:
+    """Score job posts pasted from a channel that has no API."""
+    if args.file:
+        text = Path(args.file).read_text(encoding="utf-8")
+    else:
+        print("Paste the posts, then press Ctrl+Z and Enter (Windows):")
+        text = sys.stdin.read()
+
+    result = ingest_mod.ingest(text, channel=args.channel)
+
+    print(
+        f"parsed={result['parsed']} new={result['new']} "
+        f"queued={result['queued']} gated={result['gated']}"
+    )
+    for row in result["detail"]:
+        if row["seen_before"]:
+            mark = "seen"
+        elif row["rejected_by"]:
+            mark = row["rejected_by"]
+        else:
+            mark = f"{row['score']}/100"
+        print(f"  [{mark:>24}] {row['title'][:48]} @ {row['company'][:22]}")
+        print(f"  {'':>26} {row['url'][:90]}")
+    return 0
+
+
 def cmd_daily(_: argparse.Namespace) -> int:
     cmd_run(_)
     print(digest.write(deliver=True))
@@ -69,6 +96,13 @@ def main(argv: list[str] | None = None) -> int:
     p_queue = sub.add_parser("queue", help="show jobs awaiting approval")
     p_queue.add_argument("--limit", type=int, default=20)
     p_queue.set_defaults(func=cmd_queue)
+
+    p_ingest = sub.add_parser(
+        "ingest", help="score job posts pasted from WhatsApp/Telegram/email"
+    )
+    p_ingest.add_argument("--file", help="read from a file instead of stdin")
+    p_ingest.add_argument("--channel", default="whatsapp", help="where it came from")
+    p_ingest.set_defaults(func=cmd_ingest)
 
     sub.add_parser("digest", help="write today's summary").set_defaults(func=cmd_digest)
     sub.add_parser("daily", help="run + digest (for the scheduler)").set_defaults(func=cmd_daily)

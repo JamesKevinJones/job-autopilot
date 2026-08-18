@@ -45,6 +45,7 @@ docs/DAILY/<date>.md      generated summaries
 ```bash
 python -m autopilot run                    # discover and score
 python -m autopilot queue                  # what is awaiting approval
+python -m autopilot ingest --file inbox/x.txt --channel whatsapp
 python -m autopilot digest                 # write today's summary
 python -m autopilot daily                  # run + digest (scheduler uses this)
 python -m autopilot approve <fingerprint>  # mark as applied
@@ -58,6 +59,11 @@ python -m autopilot skip <fingerprint>     # dismiss
   and never commit a real value into `profile.example.yaml` — the repo is
   public and its history was started clean on purpose. The resume assets are
   gitignored for the same reason: their header carries a phone number.
+- **Channel posts come in by paste, never by scraping.** WhatsApp Channels
+  have no public API and driving WhatsApp Web risks the account, so
+  `autopilot ingest` takes pasted text and runs it through the identical
+  gates and scoring. Nothing about a pasted job is trusted more than an API
+  one.
 - **Sources must have a public API.** LinkedIn, Naukri, Internshala and
   Wellfound forbid automated scraping and will restrict the account. They are
   handled browser-assisted, with Kevin already signed in.

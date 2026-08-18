@@ -31,3 +31,6 @@ credentials.json
 # Project virtualenv
 .venv/
 
+
+# Pasted job posts are personal correspondence, not code.
+inbox/
