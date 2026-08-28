@@ -60,3 +60,14 @@ python -c "from autopilot.store import connect; c=connect().__enter__(); print([
 Expected: a `queued` count in the single or low double digits per day. Zero
 queued across several runs means the threshold or the gates need recalibrating
 — check `rejected_by` counts before changing the threshold.
+
+## Fresher filter sanity check
+
+```powershell
+.\.venv\Scripts\python.exe -c "import sqlite3;c=sqlite3.connect('data/autopilot.db');print([tuple(r) for r in c.execute(\"SELECT rejected_by,count(*) FROM jobs WHERE status='gated' GROUP BY rejected_by ORDER BY 2 DESC\")])"
+```
+
+Expected: `no-fresher-signal` present but well below `not-a-tech-role` and
+`senior-title`. If it is the largest bucket, or if any posting whose title
+contains junior/intern/graduate/trainee appears under it, the signal
+detection in `scorer.has_fresher_signal` has regressed.

@@ -14,10 +14,17 @@ API = "https://remotive.com/api/remote-jobs"
 # actually restricts results to software engineering.
 CATEGORY = "software-dev"
 
+# Weighted towards zero-experience language. Searching "backend" returns a
+# pool that is overwhelmingly mid-level and then throws almost all of it away
+# at the gate; searching "fresher" and "graduate" asks for the right pool in
+# the first place.
 SEARCH_TERMS = (
     "junior",
     "intern",
     "graduate",
+    "entry level",
+    "trainee",
+    "associate software engineer",
     "full stack",
     "backend",
     "python",

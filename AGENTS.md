@@ -67,6 +67,14 @@ python -m autopilot skip <fingerprint>     # dismiss
 - **Sources must have a public API.** LinkedIn, Naukri, Internshala and
   Wellfound forbid automated scraping and will restrict the account. They are
   handled browser-assisted, with Kevin already signed in.
+- **A role must say it takes freshers.** `targets.experience_level: fresher`
+  in profile.yaml turns on the `no-fresher-signal` gate: a post has to carry
+  an explicit signal (a junior/intern/graduate/trainee title, "Experience:
+  Freshers", "0-1 years", "entry level", "campus hire", and similar) or it is
+  rejected. Rejecting "2+ years" is not the same thing — silence about
+  experience overwhelmingly means "we expect some", and those were being
+  queued as matches. Set `experience_level` to anything else to turn the gate
+  off.
 - **Rejections are stored, not discarded.** The `gated` status keeps every
   filtered job so thresholds can be recalibrated against real data. This is
   how the `not-a-tech-role` gate was found to be necessary.

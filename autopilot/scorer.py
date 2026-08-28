@@ -71,6 +71,38 @@ YEARS_REVERSED_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Positive evidence that a role is genuinely open to someone with no
+# professional experience. Rejecting "2+ years" is not the same as requiring
+# a fresher signal: a post that says nothing about experience passed every
+# gate and was offered up as a match, which is how roles like "Software
+# Engineer - Python - Container Images" ended up in the queue.
+ZERO_EXPERIENCE_RE = re.compile(
+    r"(?:"
+    r"fresher|freshers|fresh\s+graduate|recent\s+graduate|new\s+grad(?:uate)?|"
+    r"no\s+(?:prior\s+)?experience(?:\s+(?:is\s+)?required)?|"
+    r"0\s*(?:-|to)\s*[12]\s*(?:years?|yrs?)|"
+    r"entry[\s-]level|campus\s+hire|campus\s+recruit\w*|"
+    r"graduate\s+(?:program\w*|scheme|trainee)|early\s+career|"
+    r"final[\s-]year|college\s+graduate|freshers?\s+welcome"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def has_fresher_signal(job: Job) -> bool:
+    """True when the post itself says it welcomes someone with no experience."""
+    if JUNIOR_MARKERS_RE.search(job.title):
+        return True
+    text = job.haystack
+    if FRESHER_DECLARATION_RE.search(text):
+        return True
+    if ZERO_EXPERIENCE_RE.search(text):
+        return True
+    # "Experience: 0 years" and friends.
+    years = _required_years(text)
+    return years is not None and years == 0
+
+
 # Fresher-only: any posting asking for two or more years is out. One year is
 # tolerated because postings often write "0-1 years" or "up to 1 year".
 MAX_YEARS_EXPERIENCE = 1
@@ -167,6 +199,11 @@ def apply_gates(job: Job, profile: dict[str, Any]) -> str:
     years = _required_years(text)
     if years is not None and years > MAX_YEARS_EXPERIENCE:
         return f"requires-{years}y-experience"
+
+    # Only surface roles that actually say they take freshers. Silence about
+    # experience overwhelmingly means "we expect some".
+    if profile["targets"].get("experience_level") == "fresher" and not has_fresher_signal(job):
+        return "no-fresher-signal"
 
     if not _location_ok(job, profile):
         return "location-mismatch"
