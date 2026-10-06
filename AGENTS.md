@@ -94,3 +94,20 @@ set in `pipeline.QUEUE_THRESHOLD`.
 Skill matching is word-boundary anchored and skips `AMBIGUOUS_SKILLS`
 (`move`, `rag`, `java`, `css`, ...). Substring matching previously scored a
 Handyman listing 29/100 because "rag" appears inside "storage".
+
+## System Operating Modes
+
+Each mode is a persona defined in `.claude/modes/`. It sets what to focus on,
+how to judge the work, and the output format.
+
+| Mode | File | Switch (Claude Code) | Badge |
+| --- | --- | --- | --- |
+| Business Analyst | `ba.md` | `/mode ba` or `/ba` | `[Mode: Business Analyst]` |
+| System Architect | `architect.md` | `/mode architect` or `/architect` | `[Mode: System Architect]` |
+| Engineer (**default**) | `engineer.md` | `/mode engineer` or `/code` | `[Mode: Engineer]` |
+| Auditor | `auditor.md` | `/mode auditor` or `/audit` | `[Mode: Auditor]` |
+
+- `/mode reset` returns to Engineer.
+- **Start every response with the current mode's badge on its own line.** If no mode has been chosen this session, use `[Mode: Engineer]`.
+- A mode lasts until it is switched or reset. The Rules above apply in every mode.
+- Codex and `agy` don't have these slash commands. Say "switch to ba mode" and they read `.claude/modes/ba.md` directly.
